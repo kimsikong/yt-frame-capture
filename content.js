@@ -3,10 +3,6 @@
   'use strict';
 
   const DEFAULTS = {
-    captureKey: 's',
-    captureModifiers: [],
-    clipboardKey: 's',
-    clipboardModifiers: ['shift'],
     format: 'png',
     quality: 0.95,
     subfolder: 'YouTube Captures',
@@ -35,29 +31,6 @@
   });
 
   /* ---------------------------------------------------------- utilities */
-
-  function deepActiveElement() {
-    let el = document.activeElement;
-    while (el && el.shadowRoot && el.shadowRoot.activeElement) el = el.shadowRoot.activeElement;
-    return el;
-  }
-
-  function isTypingTarget(el) {
-    if (!el) return false;
-    if (el.isContentEditable) return true;
-    const tag = el.tagName;
-    return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
-  }
-
-  function bindingMatches(e, key, mods) {
-    if (!key || typeof e.key !== 'string') return false;
-    if (e.key.toLowerCase() !== key.toLowerCase()) return false;
-    const need = new Set(mods || []);
-    return e.shiftKey === need.has('shift')
-        && e.ctrlKey === need.has('ctrl')
-        && e.altKey === need.has('alt')
-        && e.metaKey === need.has('meta');
-  }
 
   // Pick the largest video that actually has decoded frames.
   function findVideo() {
@@ -345,7 +318,7 @@
     const btn = document.createElement('button');
     btn.id = BTN_ID;
     btn.className = 'ytp-button';
-    btn.title = '이 프레임 캡쳐';
+    btn.title = '이 프레임 캡쳐 (Shift+클릭: 클립보드로 복사)';
     btn.setAttribute('aria-label', '이 프레임 캡쳐');
     btn.style.cssText = 'vertical-align:top;display:inline-flex;align-items:center;justify-content:center';
 
@@ -361,29 +334,16 @@
     svg.appendChild(path);
     btn.appendChild(svg);
 
-    btn.addEventListener('click', (e) => { e.preventDefault(); capture(); });
+    // Shift+click keeps the clipboard route reachable without a keyboard
+    // shortcut, which a non-Latin input mode can swallow before we see it.
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      capture({ toClipboard: e.shiftKey });
+    });
     controls.insertBefore(btn, controls.firstChild);
   }
 
   setInterval(syncPlayerButton, 1500);
-
-  /* ------------------------------------------------------------ hotkeys */
-
-  document.addEventListener('keydown', (e) => {
-    if (e.isComposing || e.repeat) return;
-    if (isTypingTarget(deepActiveElement())) return;
-
-    // The binding carrying modifiers is checked first so it wins.
-    if (bindingMatches(e, settings.clipboardKey, settings.clipboardModifiers)) {
-      e.preventDefault(); e.stopPropagation();
-      capture({ toClipboard: true });
-      return;
-    }
-    if (bindingMatches(e, settings.captureKey, settings.captureModifiers)) {
-      e.preventDefault(); e.stopPropagation();
-      capture();
-    }
-  }, true);
 
   /* -------------------------------------------- messages from the popup */
 

@@ -2,12 +2,6 @@
 
 const $ = (id) => document.getElementById(id);
 
-const MOD_LABEL = { ctrl: 'Ctrl', shift: 'Shift', alt: 'Alt', meta: 'Cmd' };
-
-function comboLabel(key, mods) {
-  return [...(mods || []).map(m => MOD_LABEL[m] || m), (key || '').toUpperCase()].join(' + ');
-}
-
 function setStatus(text, isError) {
   const el = $('status');
   el.textContent = text || '';
@@ -71,11 +65,6 @@ async function renderRecent() {
 }
 
 async function init() {
-  const s = { ...YTFC_DEFAULTS, ...(await chrome.storage.sync.get(YTFC_DEFAULTS)) };
-  $('keyhint').textContent =
-    comboLabel(s.captureKey, s.captureModifiers) + ' 저장 · ' +
-    comboLabel(s.clipboardKey, s.clipboardModifiers) + ' 복사';
-
   $('shoot').addEventListener('click', () => sendCapture(false));
   $('copy').addEventListener('click', () => sendCapture(true));
   $('opts').addEventListener('click', () => chrome.runtime.openOptionsPage());

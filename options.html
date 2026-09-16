@@ -35,10 +35,6 @@
   }
   input[type=text] { width: 260px; }
   input[type=checkbox] { width: 17px; height: 17px; accent-color: #cc0000; flex: none; }
-  .keybtn { padding: 7px 12px; border: 1px solid var(--line); border-radius: 8px;
-            background: transparent; font: 600 12.5px/1.2 inherit; cursor: pointer;
-            min-width: 120px; color: inherit; }
-  .keybtn.recording { border-color: #cc0000; color: #cc0000; }
   .preview { font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
              font-size: 12px; color: var(--sub); word-break: break-all;
              padding: 0 0 14px; }
@@ -55,21 +51,14 @@
 <body>
 <div class="wrap">
   <h1>YouTube Frame Capture</h1>
-  <p class="lede">재생 중인 영상의 현재 프레임을 원본 해상도 그대로 저장합니다.
+  <p class="lede">영상 플레이어의 카메라 버튼으로 현재 프레임을 원본 해상도 그대로 저장합니다.
      일시정지 상태에서 <code>,</code> <code>.</code> 로 한 프레임씩 이동한 뒤 캡쳐하면 정확한 장면을 잡을 수 있습니다.</p>
 
   <section>
-    <h2>단축키</h2>
+    <h2>캡쳐 버튼</h2>
     <div class="field">
-      <div class="label"><b>파일로 저장</b><span>유튜브 페이지에서 누르면 바로 저장됩니다.</span></div>
-      <button class="keybtn" id="key-capture" data-target="capture"></button>
-    </div>
-    <div class="field">
-      <div class="label"><b>클립보드로 복사</b><span>저장하지 않고 바로 붙여넣기 할 수 있습니다.</span></div>
-      <button class="keybtn" id="key-clipboard" data-target="clipboard"></button>
-    </div>
-    <div class="field">
-      <div class="label"><b>플레이어에 캡쳐 버튼 표시</b><span>영상 컨트롤 줄에 카메라 아이콘을 추가합니다.</span></div>
+      <div class="label"><b>플레이어에 캡쳐 버튼 표시</b>
+        <span>영상 컨트롤 줄에 카메라 아이콘을 추가합니다. 클릭하면 저장, Shift+클릭하면 클립보드로 복사됩니다.</span></div>
       <input type="checkbox" id="showPlayerButton">
     </div>
   </section>

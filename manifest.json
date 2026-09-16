@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "YouTube Frame Capture",
-  "version": "1.0.1",
-  "description": "유튜브 재생 중 원하는 장면을 단축키 한 번으로 원본 해상도 PNG로 저장합니다.",
+  "version": "1.1.0",
+  "description": "유튜브 재생 중 원하는 장면을 플레이어의 캡쳐 버튼 한 번으로 원본 해상도 이미지로 저장합니다.",
   "permissions": ["downloads", "storage", "clipboardWrite"],
   "host_permissions": ["*://*.youtube.com/*"],
   "background": { "service_worker": "background.js" },

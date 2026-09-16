@@ -6,14 +6,7 @@ const CHECKBOXES = ['showPlayerButton', 'groupByVideo', 'saveAs',
                     'pauseOnCapture', 'showToast', 'keepRecent'];
 const TEXTS = ['subfolder', 'filenameTemplate'];
 
-const MOD_LABEL = { ctrl: 'Ctrl', shift: 'Shift', alt: 'Alt', meta: 'Cmd' };
-
 let state = { ...YTFC_DEFAULTS };
-
-function comboLabel(key, mods) {
-  if (!key) return '(없음)';
-  return [...(mods || []).map(m => MOD_LABEL[m] || m), key.toUpperCase()].join(' + ');
-}
 
 function flashSaved() {
   const el = $('saved');
@@ -64,50 +57,6 @@ function syncQualityVisibility() {
   $('quality-field').style.display = state.format === 'png' ? 'none' : '';
 }
 
-/* ----------------------------------------------------- hotkey recorder */
-
-let recording = null; // 'capture' | 'clipboard' | null
-
-function renderKeys() {
-  $('key-capture').textContent = comboLabel(state.captureKey, state.captureModifiers);
-  $('key-clipboard').textContent = comboLabel(state.clipboardKey, state.clipboardModifiers);
-}
-
-function stopRecording() {
-  recording = null;
-  document.querySelectorAll('.keybtn').forEach(b => b.classList.remove('recording'));
-  renderKeys();
-}
-
-function startRecording(target, btn) {
-  stopRecording();
-  recording = target;
-  btn.classList.add('recording');
-  btn.textContent = '키를 누르세요…';
-}
-
-document.addEventListener('keydown', (e) => {
-  if (!recording) return;
-  e.preventDefault();
-  e.stopPropagation();
-
-  if (e.key === 'Escape') { stopRecording(); return; }
-  if (['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return;
-
-  const mods = [];
-  if (e.ctrlKey) mods.push('ctrl');
-  if (e.shiftKey) mods.push('shift');
-  if (e.altKey) mods.push('alt');
-  if (e.metaKey) mods.push('meta');
-
-  const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
-  if (recording === 'capture') { state.captureKey = key; state.captureModifiers = mods; }
-  else { state.clipboardKey = key; state.clipboardModifiers = mods; }
-
-  stopRecording();
-  save();
-}, true);
-
 /* --------------------------------------------------------------- wiring */
 
 function applyToForm() {
@@ -115,7 +64,6 @@ function applyToForm() {
   for (const id of TEXTS) $(id).value = state[id] ?? '';
   $('format').value = state.format;
   $('quality').value = state.quality;
-  renderKeys();
   syncQualityVisibility();
   renderPreview();
 }
@@ -149,10 +97,6 @@ async function init() {
     state.quality = v;
     $('quality').value = v;
     save();
-  });
-
-  document.querySelectorAll('.keybtn').forEach(btn => {
-    btn.addEventListener('click', () => startRecording(btn.dataset.target, btn));
   });
 
   $('reset').addEventListener('click', async () => {

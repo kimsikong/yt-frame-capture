@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YouTube Frame Capture 설정</title>
+<style>
+  :root { color-scheme: light dark; --line:#e5e5e5; --sub:#606060; --card:#fff; --bg:#f9f9f9; }
+  @media (prefers-color-scheme: dark) {
+    :root { --line:#303030; --sub:#aaa; --card:#212121; --bg:#181818; }
+    body { color:#f1f1f1; }
+    input,select,textarea { background:#181818; color:#f1f1f1; }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px 20px 64px; background: var(--bg);
+    font: 14px/1.5 "Apple SD Gothic Neo", "Helvetica Neue", Arial, sans-serif;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 0 0 4px; letter-spacing: -.02em; }
+  .lede { color: var(--sub); font-size: 13px; margin: 0 0 24px; }
+  section { background: var(--card); border: 1px solid var(--line);
+            border-radius: 12px; padding: 4px 16px; margin-bottom: 16px; }
+  h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .07em;
+       color: var(--sub); margin: 16px 0 4px; }
+  .field { display: flex; align-items: center; gap: 12px;
+           padding: 12px 0; border-top: 1px solid var(--line); }
+  .field:first-of-type { border-top: none; }
+  .field .label { flex: 1; min-width: 0; }
+  .field .label b { display: block; font-weight: 600; font-size: 13.5px; }
+  .field .label span { display: block; color: var(--sub); font-size: 12px; margin-top: 2px; }
+  input[type=text], select, input[type=number] {
+    padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px;
+    font: inherit; font-size: 13px; min-width: 0;
+  }
+  input[type=text] { width: 260px; }
+  input[type=checkbox] { width: 17px; height: 17px; accent-color: #cc0000; flex: none; }
+  .keybtn { padding: 7px 12px; border: 1px solid var(--line); border-radius: 8px;
+            background: transparent; font: 600 12.5px/1.2 inherit; cursor: pointer;
+            min-width: 120px; color: inherit; }
+  .keybtn.recording { border-color: #cc0000; color: #cc0000; }
+  .preview { font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+             font-size: 12px; color: var(--sub); word-break: break-all;
+             padding: 0 0 14px; }
+  .tokens { font-size: 12px; color: var(--sub); padding: 0 0 14px; line-height: 1.7; }
+  code { background: rgba(128,128,128,.16); padding: 1px 5px; border-radius: 4px;
+         font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; }
+  .bar { display: flex; align-items: center; gap: 12px; margin-top: 20px; }
+  button.reset { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line);
+                 background: transparent; color: inherit; cursor: pointer; font: 600 13px/1 inherit; }
+  #saved { color: #2ba640; font-size: 12.5px; opacity: 0; transition: opacity .2s; }
+  #saved.on { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>YouTube Frame Capture</h1>
+  <p class="lede">재생 중인 영상의 현재 프레임을 원본 해상도 그대로 저장합니다.
+     일시정지 상태에서 <code>,</code> <code>.</code> 로 한 프레임씩 이동한 뒤 캡쳐하면 정확한 장면을 잡을 수 있습니다.</p>
+
+  <section>
+    <h2>단축키</h2>
+    <div class="field">
+      <div class="label"><b>파일로 저장</b><span>유튜브 페이지에서 누르면 바로 저장됩니다.</span></div>
+      <button class="keybtn" id="key-capture" data-target="capture"></button>
+    </div>
+    <div class="field">
+      <div class="label"><b>클립보드로 복사</b><span>저장하지 않고 바로 붙여넣기 할 수 있습니다.</span></div>
+      <button class="keybtn" id="key-clipboard" data-target="clipboard"></button>
+    </div>
+    <div class="field">
+      <div class="label"><b>플레이어에 캡쳐 버튼 표시</b><span>영상 컨트롤 줄에 카메라 아이콘을 추가합니다.</span></div>
+      <input type="checkbox" id="showPlayerButton">
+    </div>
+  </section>
+
+  <section>
+    <h2>이미지</h2>
+    <div class="field">
+      <div class="label"><b>파일 형식</b><span>PNG는 무손실, JPEG는 용량이 작습니다.</span></div>
+      <select id="format">
+        <option value="png">PNG (무손실)</option>
+        <option value="jpeg">JPEG</option>
+        <option value="webp">WebP</option>
+      </select>
+    </div>
+    <div class="field" id="quality-field">
+      <div class="label"><b>품질</b><span>JPEG · WebP에만 적용됩니다.</span></div>
+      <input type="number" id="quality" min="0.3" max="1" step="0.05" style="width:90px">
+    </div>
+  </section>
+
+  <section>
+    <h2>저장 위치와 이름</h2>
+    <div class="field">
+      <div class="label"><b>하위 폴더</b><span>다운로드 폴더 기준입니다. 비우면 다운로드 폴더에 바로 저장됩니다.</span></div>
+      <input type="text" id="subfolder" placeholder="YouTube Captures" style="width:200px">
+    </div>
+    <div class="field">
+      <div class="label"><b>영상별 폴더로 나누기</b><span>영상 제목으로 폴더를 하나 더 만듭니다.</span></div>
+      <input type="checkbox" id="groupByVideo">
+    </div>
+    <div class="field">
+      <div class="label"><b>파일명 형식</b></div>
+      <input type="text" id="filenameTemplate">
+    </div>
+    <div class="tokens">
+      사용 가능한 토큰:
+      <code>{title}</code> 영상 제목 ·
+      <code>{id}</code> 영상 ID ·
+      <code>{timeStr}</code> 시:분:초.밀리초 ·
+      <code>{time}</code> 초 ·
+      <code>{date}</code> 오늘 날짜 ·
+      <code>{res}</code> 해상도
+    </div>
+    <div class="preview" id="preview"></div>
+    <div class="field">
+      <div class="label"><b>저장할 때마다 위치 묻기</b><span>끄면 묻지 않고 바로 저장합니다.</span></div>
+      <input type="checkbox" id="saveAs">
+    </div>
+  </section>
+
+  <section>
+    <h2>동작</h2>
+    <div class="field">
+      <div class="label"><b>캡쳐할 때 영상 일시정지</b><span>연속으로 프레임을 고를 때 편합니다.</span></div>
+      <input type="checkbox" id="pauseOnCapture">
+    </div>
+    <div class="field">
+      <div class="label"><b>캡쳐 알림 표시</b><span>화면 아래에 미리보기를 잠깐 띄웁니다.</span></div>
+      <input type="checkbox" id="showToast">
+    </div>
+    <div class="field">
+      <div class="label"><b>최근 캡쳐 기록 보관</b><span>확장 아이콘 팝업에 최근 12장을 보여줍니다.</span></div>
+      <input type="checkbox" id="keepRecent">
+    </div>
+  </section>
+
+  <div class="bar">
+    <button class="reset" id="reset">기본값으로 되돌리기</button>
+    <span id="saved">저장됨</span>
+  </div>
+</div>
+
+<script src="defaults.js"></script>
+<script src="options.js"></script>
+</body>
+</html>
